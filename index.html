@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SVG.js</title>
+  <script type="text/javascript" src="./node_modules/snapsvg/dist/snap.svg-min.js"></script>
+</head>
+<body>
+  aaaa
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="60" height="60" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="30" fill="#F00"></circle>
+  </svg>
+  iii
+  <svg id="svg" style="width:160px;height:160px;"></svg>
+  <script>
+    // First lets create our drawing surface out of existing SVG element
+    // If you want to create new surface just provide dimensions
+    // like s = Snap(800, 600);
+    var s = Snap("#svg");
+
+    bodyPath = s.path();
+    
+    Snap.load("images/body_standard.svg", function(f) {
+      var bodyPath1 = f.select("path").attr({
+        transform: "translate(20, 20)",
+//        fill: "#29abe2"
+      });
+      console.log("body loaded!");
+      console.log(bodyPath1);
+      console.log(bodyPath1.attr());
+      bodyPath.attr(bodyPath1.attr());
+      console.log(bodyPath);
+
+      // Set an animation of the body.
+      Snap.load("images/body_standard_anim1.svg", function(f) {
+        var bodyPath2 = f.select("path").attr({
+          transform: "translate(26, -20)",
+        });
+        console.log(bodyPath2);
+
+        Snap.load("images/body_standard_anim2.svg", function(f) {
+          var bodyPath3 = f.select("path").attr({
+            transform: "translate(20,54)",
+          });
+          console.log(bodyPath3);
+
+          Snap.load("images/eye_circle.svg", function(fileLeftEye) {
+            Snap.load("images/eye_circle.svg", function(fileRightEye) {
+              Snap.load("images/mouth_standard.svg", function(fileMouth) {
+                var groupLeftEye = fileLeftEye.select("g").attr({
+                  transform: "translate(40, 40)"
+                });
+                var groupRightEye = fileRightEye.select("g").attr({
+                  transform: "translate(84, 40)"
+                });
+                var groupMouth = fileMouth.select("g").attr({
+                  transform: "translate(50, 70)",
+                });
+                s.append(groupLeftEye);
+                s.append(groupRightEye);
+                s.append(groupMouth);
+
+                var leftEyeMovingAttrs = [
+                  { x: 40, y: 40, easing: mina.easeout, duration: 200, },
+                  { x: 40, y: 10, easing: mina.easeout, duration: 400, },
+                  { x: 40, y: 60, easing: mina.easein, duration: 400, },
+                ];
+                var rightEyeMovingAttrs = [
+                  { x: 84, y: 40, easing: mina.easeout, duration: 200, },
+                  { x: 84, y: 10, easing: mina.easeout, duration: 400, },
+                  { x: 84, y: 60, easing: mina.easein, duration: 400, },
+                ];
+                var mouthEyeMovingAttrs = [
+                  { x: 50, y: 70, easing: mina.easeout, duration: 300, },
+                  { x: 50, y: 50, easing: mina.easeout, duration: 300, },
+                  { x: 50, y: 90, easing: mina.easeout, duration: 400, },
+                ];
+                StartMoving(groupLeftEye, leftEyeMovingAttrs, 1);
+                StartMoving(groupRightEye, rightEyeMovingAttrs, 1);
+                StartMoving(groupMouth, mouthEyeMovingAttrs, 1);
+                StartAnimation(bodyPath, 
+                [{ path: bodyPath1, easing: mina.easeout, duration: 100 },
+                { path: bodyPath2, easing: mina.linear, duration: 400 },
+                { path: bodyPath3, easing: mina.easein, duration: 500 }
+                ], 
+                1);
+              });
+            });
+          });          
+
+        });
+      });
+        
+
+      s.click(function() {
+        console.log("clicked!");
+
+      });
+    });
+
+
+    function StartMoving(group, attrs, idx) {
+      idx = idx % attrs.length;
+
+      group.animate({transform: "translate(" + attrs[idx].x + ", " + attrs[idx].y + ")" }, 
+        attrs[idx].duration, 
+        attrs[idx].easing, 
+        function() {
+          StartMoving(group, attrs, idx+1);
+        });
+    }
+
+    function StartAnimation(bodyPath, bodyPaths, idx) {
+      idx = idx % bodyPaths.length;
+
+      bodyPath.animate({d: bodyPaths[idx].path.attr("d"), transform: bodyPaths[idx].path.attr("transform")}, 
+        bodyPaths[idx].duration, 
+        bodyPaths[idx].easing, 
+        function() {
+          StartAnimation(bodyPath, bodyPaths, idx+1);
+        });
+    }
+  </script>
+</body>
+</html>
